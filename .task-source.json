@@ -1,0 +1,212 @@
+{
+  "task_source_schema_version": 1,
+  "cc_feedback_profile": "cc-feedback-2611",
+  "project_domain": "数据工程",
+  "project_subdirection": "其他",
+  "supported_task_types": [
+    "功能开发",
+    "功能优化",
+    "质量保障",
+    "技术讨论",
+    "问题排查与诊断"
+  ],
+  "type_coverage": {
+    "功能开发": {
+      "status": "supported",
+      "reason": "逐段因缺环跳年可由现有业务规则衍生为独立新交付，未在基线实现。",
+      "source_anchors": [
+        "tree/dating.py",
+        "tree/example.py",
+        "tree/http_api.py",
+        "tree/offsets.py",
+        "tree/reference.py"
+      ]
+    },
+    "功能优化": {
+      "status": "supported",
+      "reason": "留一参考复核有现有计算与输出作为行为调整入口，未计作正式候选。",
+      "source_anchors": [
+        "tree/dating.py",
+        "tree/example.py",
+        "tree/http_api.py",
+        "tree/offsets.py",
+        "tree/reference.py"
+      ]
+    },
+    "质量保障": {
+      "status": "supported",
+      "reason": "唯一候选才输出逐年宽度和比较凭证；可基于真实入口构建输入对照验证。",
+      "source_anchors": [
+        "tree/dating.py",
+        "tree/example.py",
+        "tree/http_api.py",
+        "tree/offsets.py",
+        "tree/reference.py"
+      ]
+    },
+    "技术讨论": {
+      "status": "supported",
+      "reason": "可围绕 共识先满足最小票数，再要求单一票数最高的方向；零差是正常一票。 比较基线允许的不同表达方式和结果。",
+      "source_anchors": [
+        "tree/dating.py",
+        "tree/example.py",
+        "tree/http_api.py",
+        "tree/offsets.py",
+        "tree/reference.py"
+      ]
+    },
+    "问题排查与诊断": {
+      "status": "supported",
+      "reason": "从合成请求输入追踪 同分同覆盖不产出已定年序列 的证据，不假造缺陷。",
+      "source_anchors": [
+        "tree/dating.py",
+        "tree/example.py",
+        "tree/http_api.py",
+        "tree/offsets.py",
+        "tree/reference.py"
+      ]
+    },
+    "Bugfix": {
+      "status": "no_verified_defect",
+      "reason": "未确认可复现缺陷；不预埋缺陷。"
+    },
+    "代码重构": {
+      "status": "unsupported",
+      "reason": "尚未实证独立困难重构空间，先保留当前领域职责。"
+    },
+    "依赖升级与迁移": {
+      "status": "unsupported",
+      "reason": "无第三方依赖或已核实的迁移目标。"
+    },
+    "项目维护": {
+      "status": "unsupported",
+      "reason": "尚无版本维护流程或交付证据。"
+    },
+    "部署运维": {
+      "status": "unsupported",
+      "reason": "仅本地无状态演示，没有部署恢复契约。"
+    },
+    "泛Agent需求": {
+      "status": "unsupported",
+      "reason": "暂无外部真实工作流输入及交付约束。"
+    }
+  },
+  "prompt_contract": {
+    "schema_version": 1,
+    "mode": "baseline-only",
+    "generation_scope": {
+      "mode": "all_supported"
+    },
+    "planning_only": true,
+    "minimum_active_prompts": {
+      "功能开发": 20,
+      "功能优化": 20,
+      "质量保障": 2,
+      "技术讨论": 2,
+      "问题排查与诊断": 2
+    }
+  },
+  "entities": [
+    {
+      "id": "dated_core",
+      "label": "已定年木芯"
+    },
+    {
+      "id": "width",
+      "label": "宽度测量"
+    },
+    {
+      "id": "vote",
+      "label": "升降票"
+    },
+    {
+      "id": "year_reference",
+      "label": "年度共识"
+    },
+    {
+      "id": "undated_core",
+      "label": "未定年木芯"
+    },
+    {
+      "id": "offset_candidate",
+      "label": "起年候选"
+    },
+    {
+      "id": "matched_series",
+      "label": "定年宽度制品"
+    }
+  ],
+  "state_machines": [
+    {
+      "subject": "offset_candidate",
+      "states": [
+        "not_enough_overlap",
+        "tie",
+        "unique"
+      ],
+      "transitions": [],
+      "kind": "derived outcomes per full input; not a persisted lifecycle"
+    }
+  ],
+  "capability_families": [
+    {
+      "family": "逐年参考表",
+      "occupied_by": [
+        "reference.consensus"
+      ],
+      "available": true
+    },
+    {
+      "family": "候选偏移评估",
+      "occupied_by": [
+        "offsets.shortlist"
+      ],
+      "available": true
+    },
+    {
+      "family": "定年宽度交付",
+      "occupied_by": [
+        "dating.dated_series"
+      ],
+      "available": true
+    }
+  ],
+  "tension_points": [
+    {
+      "workflow_id": "reference-votes",
+      "description": "输出逐年升降共识、票源和未决状态，同时保留反例证据。",
+      "observable_failure": "平票或证据少于最低票数时不输出参考方向"
+    },
+    {
+      "workflow_id": "candidate-offsets",
+      "description": "只对双方有效转折比较，保留并列首选，同时保留反例证据。",
+      "observable_failure": "达不到最小共同转折数不选择起年"
+    },
+    {
+      "workflow_id": "dated-widths",
+      "description": "唯一候选才输出逐年宽度和比较凭证，同时保留反例证据。",
+      "observable_failure": "同分同覆盖不产出已定年序列"
+    }
+  ],
+  "extension_seams": [
+    {
+      "id": "product-output-reference-votes",
+      "anchor": "tree/reference.py:consensus",
+      "entry": "POST /chronology/reference-votes",
+      "distinct_outcome": "输出逐年升降共识、票源和未决状态"
+    },
+    {
+      "id": "product-output-candidate-offsets",
+      "anchor": "tree/offsets.py:shortlist",
+      "entry": "POST /chronology/candidate-offsets",
+      "distinct_outcome": "只对双方有效转折比较，保留并列首选"
+    },
+    {
+      "id": "product-output-dated-widths",
+      "anchor": "tree/dating.py:dated_series",
+      "entry": "POST /chronology/dated-widths",
+      "distinct_outcome": "唯一候选才输出逐年宽度和比较凭证"
+    }
+  ],
+  "prompt_anchors": []
+}

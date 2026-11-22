@@ -1,0 +1,23 @@
+{
+  "language": "Python 3.11+ (stdlib)",
+  "project_shape": "backend",
+  "source_extensions": [
+    ".py"
+  ],
+  "build_command": "python3 -B -c \"from pathlib import Path; [compile(p.read_bytes(), str(p), 'exec') for p in Path('tree').glob('*.py')]\"",
+  "testing": "deferred",
+  "workflow_checks": [
+    {
+      "workflow_id": "reference-votes",
+      "command": "python3 -B -m tree.example /chronology/reference-votes"
+    },
+    {
+      "workflow_id": "candidate-offsets",
+      "command": "python3 -B -m tree.example /chronology/candidate-offsets"
+    },
+    {
+      "workflow_id": "dated-widths",
+      "command": "python3 -B -m tree.example /chronology/dated-widths"
+    }
+  ]
+}

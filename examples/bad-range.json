@@ -1,0 +1,55 @@
+{
+  "references": {
+    "north": {
+      "start_year": 1940,
+      "widths_um": [
+        10,
+        12,
+        9,
+        11,
+        11,
+        8,
+        10,
+        7
+      ]
+    },
+    "ridge": {
+      "start_year": 1940,
+      "widths_um": [
+        20,
+        24,
+        19,
+        23,
+        23,
+        18,
+        21,
+        15
+      ]
+    },
+    "east": {
+      "start_year": 1940,
+      "widths_um": [
+        15,
+        18,
+        null,
+        16,
+        17,
+        13,
+        19,
+        12
+      ]
+    }
+  },
+  "quorum": 2,
+  "undated_widths_um": [
+    22,
+    17,
+    21,
+    21
+  ],
+  "start_range": [
+    1945,
+    1940
+  ],
+  "min_pairs": 3
+}

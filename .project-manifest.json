@@ -1,0 +1,100 @@
+{
+  "project_shape": "backend",
+  "modules": [
+    {
+      "id": "dating",
+      "path": "tree/dating.py",
+      "responsibility": "Materialize dated measurements only where the ranking is unambiguous."
+    },
+    {
+      "id": "example",
+      "path": "tree/example.py",
+      "responsibility": "Send the bundled synthetic input to an ephemeral local HTTP service."
+    },
+    {
+      "id": "http_api",
+      "path": "tree/http_api.py",
+      "responsibility": "Local JSON transport for 木芯年轮交叉定年; only loopback is exposed."
+    },
+    {
+      "id": "offsets",
+      "path": "tree/offsets.py",
+      "responsibility": "Rank candidate starts on exact agreement and evidence coverage."
+    },
+    {
+      "id": "reference",
+      "path": "tree/reference.py",
+      "responsibility": "Measure local width direction and build evidence-backed annual votes."
+    },
+    {
+      "id": "http_api",
+      "path": "tree/http_api.py",
+      "responsibility": "Local JSON transport for 木芯年轮交叉定年; only loopback is exposed."
+    },
+    {
+      "id": "example",
+      "path": "tree/example.py",
+      "responsibility": "Send the bundled synthetic input to an ephemeral local HTTP service."
+    }
+  ],
+  "workflows": [
+    {
+      "id": "reference-votes",
+      "name": "逐年参考表",
+      "entry": "POST /chronology/reference-votes",
+      "success": "输出逐年升降共识、票源和未决状态",
+      "failure": "平票或证据少于最低票数时不输出参考方向",
+      "verification": "python3 -B -m tree.example /chronology/reference-votes",
+      "module_ids": [
+        "reference",
+        "http_api",
+        "example"
+      ],
+      "steps": [
+        "解析项目专用输入并验证前置条件",
+        "输出逐年升降共识、票源和未决状态"
+      ]
+    },
+    {
+      "id": "candidate-offsets",
+      "name": "候选偏移评估",
+      "entry": "POST /chronology/candidate-offsets",
+      "success": "只对双方有效转折比较，保留并列首选",
+      "failure": "达不到最小共同转折数不选择起年",
+      "verification": "python3 -B -m tree.example /chronology/candidate-offsets",
+      "module_ids": [
+        "reference",
+        "offsets",
+        "http_api"
+      ],
+      "steps": [
+        "解析项目专用输入并验证前置条件",
+        "只对双方有效转折比较，保留并列首选"
+      ]
+    },
+    {
+      "id": "dated-widths",
+      "name": "定年宽度交付",
+      "entry": "POST /chronology/dated-widths",
+      "success": "唯一候选才输出逐年宽度和比较凭证",
+      "failure": "同分同覆盖不产出已定年序列",
+      "verification": "python3 -B -m tree.example /chronology/dated-widths",
+      "module_ids": [
+        "reference",
+        "offsets",
+        "dating"
+      ],
+      "steps": [
+        "解析项目专用输入并验证前置条件",
+        "唯一候选才输出逐年宽度和比较凭证"
+      ]
+    }
+  ],
+  "complexity": {
+    "mechanisms": [
+      "宽度为正整数微米；`null` 是缺测，不会跨两侧计算升降。升降归属于后一年。",
+      "共识先满足最小票数，再要求单一票数最高的方向；零差是正常一票。",
+      "排序先比有效转折的精确匹配率，再比有效对数；仍并列时保留所有候选。拟合起年唯一时原缺测仍输出 null。"
+    ]
+  }
+}
