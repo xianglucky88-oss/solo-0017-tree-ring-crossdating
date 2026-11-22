@@ -1,10 +1,14 @@
 {
-  "language": "Python 3.11+ (stdlib)",
-  "project_shape": "backend",
+  "language": "Python 3.11+ (stdlib), SQLite, HTML/CSS and native JavaScript ES modules",
+  "project_shape": "fullstack",
   "source_extensions": [
-    ".py"
+    ".py",
+    ".js",
+    ".css",
+    ".html",
+    ".sql"
   ],
-  "build_command": "python3 -B -c \"from pathlib import Path; [compile(p.read_bytes(), str(p), 'exec') for p in Path('tree').glob('*.py')]\"",
+  "build_command": "python3 -B -c \"from pathlib import Path; [compile(p.read_bytes(),str(p),'exec') for p in Path('.').glob('*/*.py')]\"",
   "testing": "deferred",
   "workflow_checks": [
     {
@@ -18,6 +22,50 @@
     {
       "workflow_id": "dated-widths",
       "command": "python3 -B -m tree.example /chronology/dated-widths"
+    },
+    {
+      "workflow_id": "wb-stage",
+      "command": "python3 -B examples/workbench_check.py"
+    },
+    {
+      "workflow_id": "wb-publish",
+      "command": "python3 -B examples/workbench_check.py"
+    },
+    {
+      "workflow_id": "wb-history",
+      "command": "python3 -B examples/workbench_check.py"
+    },
+    {
+      "workflow_id": "wb-restore",
+      "command": "python3 -B examples/workbench_check.py"
+    },
+    {
+      "workflow_id": "wb-batch",
+      "command": "python3 -B examples/workbench_check.py"
+    },
+    {
+      "workflow_id": "wb-replay",
+      "command": "python3 -B examples/workbench_check.py"
+    },
+    {
+      "workflow_id": "wb-compare",
+      "command": "python3 -B examples/workbench_check.py"
+    },
+    {
+      "workflow_id": "wb-export",
+      "command": "python3 -B examples/workbench_check.py"
+    },
+    {
+      "workflow_id": "wb-core-influence",
+      "command": "python3 -B examples/workbench_check.py core-influence"
+    },
+    {
+      "workflow_id": "wb-vote-gaps",
+      "command": "python3 -B examples/workbench_check.py vote-gaps"
+    },
+    {
+      "workflow_id": "wb-year-proof",
+      "command": "python3 -B examples/workbench_check.py year-proof"
     }
   ]
 }
