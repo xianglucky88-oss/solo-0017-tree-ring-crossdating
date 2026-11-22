@@ -25,3 +25,38 @@
 本机工作台与原接口是独立入口。浏览器只负责录入、选择和呈现，所有业务判断在 Python 中完成。导入保留输入文本和规范化 JSON 的摘要。发布固定导入时的代次；若其他工作已发布或恢复版本，旧暂存单必须重新导入。恢复只追加事件，不改历史版本。原子批加工固定一个修订，运行按修订、操作和引擎版本去重。历史复算不读取当前版本；引擎标签不匹配时不声称可复验。版本对比分别展示输入字段和加工输出。证据包不是电子签名，不应作为外部认证。
 
 生产运行使用项目专属 SQLite 文件，只接受本机来源。HTTP 对比、复算和导出与浏览器表单共用实际业务实现。页面的列表只显示有界的近期记录，不会删除数据库中的历史。原题库未迁移到新版本。
+
+## 独立复测定年复核
+
+POST /api/run (independent-check)，读取 `examples/workbench.json` 展示的 `witness_reading`。唯一起年后把独立复测宽度按年对齐并分别列出缺测和冲突。复测不投参考票，不能挑选并列起年；缺测不算复核通过。没有可选原料时返回输入错误，不会影响旧入口。比较、复算和证据导出沿用相同的固定修订；不替用户重写经过审定的原料。
+## 成品复核与交接
+
+只有 `independent-check` 加工可以开复核。缺少可选领域证据时仍可运行原加工，但不能伪造该复核成品；批处理中一项失败不写入部分成品。
+
+| 入口 | 保证 |
+| --- | --- |
+| `POST /api/review/open`，`run` 和 `generation` | 核验输入与产出摘要；运行所属修订及提供的发布代次都须是当前值；同运行同代次重试返回同单。 |
+| `POST /api/review/decide`，`review` 和 `decision` | 待复核可转为 `approved` 或 `returned`。通过还须领域条件满足且仍为当前代次；退回不要求修订仍为当前。重复报同一结论有效，不能改判。 |
+| `POST /api/review/history`，`run` | 列出该运行历代复核及是否已签发，按代次倒序。 |
+| `POST /api/dispatch`，`review` | 初次签发必须已批准且同代次仍有效。事务内写入唯一凭据和载荷摘要；已签发的重试返回原凭据。 |
+| `GET /api/dispatch/{review}` | 从不可变的运行、原料和复核读出载荷并校验摘要，不需要该代次仍为当前。 |
+
+SQLite v1→v2 只新增复核单与凭据结构；迁移不改写旧行、运行引擎标签和证据格式。发布事件的首次代次与复核的当前激活代次是两个不同概念。恢复相同修订可读旧制品，但新签发仍需新一代复核。
+
+## 木芯关联定年
+
+`POST /api/run (relative-dating)`。`relative_cores` 对每芯独立给 `undated_widths_um/start_range/min_pairs`；`relative_links` 每条声明 右芯起年减左芯起年的 `shift_years`、`min_pairs`、`max_delta_um`。空年占位但不作量测证据。所有合格重叠约束必须同时成立；无参考票源的组件即便输入范围只有一年也不署名为已定年。
+
+演练：`python3 -B examples/workbench_check.py relative-dating`。新原料不是旧导入的必填项；未提交时只影响本加工。
+
+## 定年木芯年度清单
+
+`POST /api/run (calendar-inventory)`。`calendar_inventory` 含闭合年份范围 `years` 和逐年最低实测芯数 `min_observed`。未定位芯单列，已定位空槽不计实测；这是观测档案清点，不将同址或同树的芯当作独立母树。
+
+演练：`python3 -B examples/workbench_check.py calendar-inventory`。新原料不是旧导入的必填项；未提交时只影响本加工。
+
+## 按树年度汇总
+
+`POST /api/run (tree-chronology)`。`tree_chronology.parents` 覆盖每枚目标芯，`min_trees` 是逐年独立树数门槛。先均分同树观测、再等权组合，保留精确分数。未定年芯不补位；不将年度芯数门槛替代树数。
+
+演练：`python3 -B examples/workbench_check.py tree-chronology`。新原料不是旧导入的必填项；未提交时只影响本加工。

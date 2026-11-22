@@ -19,7 +19,12 @@
     {
       "id": "reference",
       "path": "tree/reference.py",
-      "responsibility": "Measure local width direction and build evidence-backed annual votes."
+      "responsibility": "按参考芯身份与历年汇集有效转折票，计算共识、平票及证据不足。"
+    },
+    {
+      "id": "observations",
+      "path": "tree/observations.py",
+      "responsibility": "校验年宽序列，相邻观测共同决定转折，缺测仍占其历年位置。"
     },
     {
       "id": "wb_errors",
@@ -155,6 +160,46 @@
       "id": "wb_schema",
       "path": "workbench/schema.sql",
       "responsibility": "版本归属、外键和运行唯一性约束"
+    },
+    {
+      "id": "independent_check",
+      "path": "tree/independent_check.py",
+      "responsibility": "唯一起年后把独立复测宽度按年对齐并分别列出缺测和冲突"
+    },
+    {
+      "id": "wb_review",
+      "path": "workbench/review.py",
+      "responsibility": "按当前发布代次和领域资格复核加工成品"
+    },
+    {
+      "id": "wb_dispatch",
+      "path": "workbench/dispatch.py",
+      "responsibility": "签发及复验绑定复核和原证据的交接凭据"
+    },
+    {
+      "id": "wb_handoff_schema",
+      "path": "workbench/handoff.sql",
+      "responsibility": "复核状态、代次归属及一单一交接的持久化约束"
+    },
+    {
+      "id": "ui_review_js",
+      "path": "web/review.js",
+      "responsibility": "展示运行复核历史并发起复核和签发操作"
+    },
+    {
+      "id": "relative_dating",
+      "path": "tree/relative_dating.py",
+      "responsibility": "用通过实测的相对起年关系和各芯候选交集确定组件绝对年份，不以局部并列直接任取起年。"
+    },
+    {
+      "id": "calendar_inventory",
+      "path": "tree/calendar_inventory.py",
+      "responsibility": "按联合定年的正式起年抽取该年度的实测槽位，量测与空槽保持原索引。"
+    },
+    {
+      "id": "tree_chronology",
+      "path": "tree/tree_chronology.py",
+      "responsibility": "在明确定年的实测木芯中按母树聚合，再按不同母树计算年度支持和等权均值。"
     }
   ],
   "workflows": [
@@ -166,13 +211,13 @@
       "failure": "平票或证据少于最低票数时不输出参考方向",
       "verification": "python3 -B -m tree.example /chronology/reference-votes",
       "module_ids": [
-        "reference",
         "http_api",
-        "example"
+        "observations",
+        "reference"
       ],
       "steps": [
-        "解析项目专用输入并验证前置条件",
-        "输出逐年升降共识、票源和未决状态"
+        "校验各参考芯的宽度，按相邻实测生成保留缺测位置的转折",
+        "从指定起年挂接历年票源，只凭有效票数和方向输出年共识或未决原因"
       ]
     },
     {
@@ -398,6 +443,130 @@
         "固定输入修订",
         "逐年票源证据"
       ]
+    },
+    {
+      "id": "wb-independent-check",
+      "name": "独立复测定年复核",
+      "entry": "POST /api/run (independent-check)",
+      "success": "唯一起年后把独立复测宽度按年对齐并分别列出缺测和冲突",
+      "failure": "复测不投参考票，不能挑选并列起年；缺测不算复核通过",
+      "verification": "python3 -B examples/workbench_check.py independent-check",
+      "module_ids": [
+        "wb_runs",
+        "wb_operations",
+        "independent_check",
+        "dating",
+        "offsets",
+        "reference"
+      ],
+      "steps": [
+        "固定同一份已发布的原料修订",
+        "唯一起年后把独立复测宽度按年对齐并分别列出缺测和冲突",
+        "写成可复算并可导出证据的产出"
+      ]
+    },
+    {
+      "id": "wb-review",
+      "name": "业务成品复核",
+      "entry": "POST /api/review/open + /api/review/decide",
+      "success": "复核绑定运行与当前发布代次；可批准合格结果，也可保留退回的记录。",
+      "failure": "领域未过或代次已过时不能批准；已决定的单据不能改判。",
+      "module_ids": [
+        "wb_review",
+        "wb_evidence",
+        "wb_runs",
+        "wb_catalog",
+        "wb_db"
+      ],
+      "verification": "python3 -B examples/workbench_check.py independent-check",
+      "steps": [
+        "核对运行的原稿、规范化输入和产出摘要",
+        "按领域条件计算可否放行",
+        "绑定发布代次并持久化复核结论"
+      ]
+    },
+    {
+      "id": "wb-dispatch",
+      "name": "签发交接凭据",
+      "entry": "POST /api/dispatch + GET /api/dispatch/{review}",
+      "success": "通过复核后签发绑定原始原料和领域成品的凭据；已经签发的历史凭据可以再次下载。",
+      "failure": "复核已批准但尚未签发时若发布代次变化，拒绝新签发；恢复相同修订不复用旧批准。",
+      "module_ids": [
+        "wb_dispatch",
+        "wb_review",
+        "wb_evidence",
+        "wb_catalog",
+        "wb_db"
+      ],
+      "verification": "python3 -B examples/workbench_check.py independent-check",
+      "steps": [
+        "读取已通过的复核及当前发布指针",
+        "核验证据并写入凭据摘要",
+        "下载时再验摘要，不用当前原料替换旧证据"
+      ]
+    },
+    {
+      "id": "wb-relative-dating",
+      "name": "木芯关联定年",
+      "entry": "POST /api/run (relative-dating)",
+      "success": "用通过实测的相对起年关系和各芯候选交集确定组件绝对年份，不以局部并列直接任取起年。",
+      "failure": "错位量测不能结边，支持的边形成不一致环则不定该组件的绝对年份。",
+      "verification": "python3 -B examples/workbench_check.py relative-dating",
+      "module_ids": [
+        "wb_runs",
+        "wb_operations",
+        "relative_dating",
+        "offsets",
+        "reference",
+        "observations"
+      ],
+      "steps": [
+        "固定原料修订",
+        "用通过实测的相对起年关系和各芯候选交集确定组件绝对年份，不以局部并列直接任取起年。",
+        "更正原料后对读旧产出、复算并导出原证据"
+      ]
+    },
+    {
+      "id": "wb-calendar-inventory",
+      "name": "定年木芯年度清单",
+      "entry": "POST /api/run (calendar-inventory)",
+      "success": "按联合定年的正式起年抽取该年度的实测槽位，量测与空槽保持原索引。",
+      "failure": "关系证据撤去后并列木芯进入待定清单，不把同宽度或局部领先冒充确定年份。",
+      "verification": "python3 -B examples/workbench_check.py calendar-inventory",
+      "module_ids": [
+        "wb_runs",
+        "wb_operations",
+        "calendar_inventory",
+        "relative_dating",
+        "observations",
+        "offsets"
+      ],
+      "steps": [
+        "固定原料修订",
+        "按联合定年的正式起年抽取该年度的实测槽位，量测与空槽保持原索引。",
+        "更正原料后对读旧产出、复算并导出原证据"
+      ]
+    },
+    {
+      "id": "wb-tree-chronology",
+      "name": "按树年度汇总",
+      "entry": "POST /api/run (tree-chronology)",
+      "success": "在明确定年的实测木芯中按母树聚合，再按不同母树计算年度支持和等权均值。",
+      "failure": "两枚已定年芯可能来自同一棵树；保留读数，但不能据此满足两棵独立树的门槛。",
+      "verification": "python3 -B examples/workbench_check.py tree-chronology",
+      "module_ids": [
+        "wb_runs",
+        "wb_operations",
+        "tree_chronology",
+        "calendar_inventory",
+        "relative_dating",
+        "observations"
+      ],
+      "steps": [
+        "固定原料修订",
+        "在明确定年的实测木芯中按母树聚合，再按不同母树计算年度支持和等权均值。",
+        "更正原料后对读旧产出、复算并导出原证据"
+      ]
     }
   ],
   "complexity": {
@@ -409,7 +578,13 @@
       "保留原始输入与规范化版本",
       "原子批加工",
       "固定修订复算",
-      "导出前校验证据摘要"
+      "导出前校验证据摘要",
+      "唯一起年后把独立复测宽度按年对齐并分别列出缺测和冲突",
+      "按领域资格与发布代次审批",
+      "校验证据、审批与当前指针后签发，历史凭据重试不重新决策",
+      "用通过实测的相对起年关系和各芯候选交集确定组件绝对年份，不以局部并列直接任取起年。",
+      "按联合定年的正式起年抽取该年度的实测槽位，量测与空槽保持原索引。",
+      "在明确定年的实测木芯中按母树聚合，再按不同母树计算年度支持和等权均值。"
     ]
   }
 }

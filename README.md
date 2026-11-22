@@ -10,6 +10,24 @@ python3 -B -m workbench
 
 新增领域加工：逐芯留出复核、无共识年份、逐年票源证据。流程验收：`python3 -B examples/workbench_check.py`。
 
+### 木芯关联定年
+
+在工作台运行 `relative-dating`。用通过实测的相对起年关系和各芯候选交集确定组件绝对年份，不以局部并列直接任取起年。演练：`python3 -B examples/workbench_check.py relative-dating`。
+
+### 定年木芯年度清单
+
+在工作台运行 `calendar-inventory`。按联合定年的正式起年抽取该年度的实测槽位，量测与空槽保持原索引。演练：`python3 -B examples/workbench_check.py calendar-inventory`。
+
+### 按树年度汇总
+
+在工作台运行 `tree-chronology`。在明确定年的实测木芯中按母树聚合，再按不同母树计算年度支持和等权均值。演练：`python3 -B examples/workbench_check.py tree-chronology`。
+
+### 成品复核与交接
+
+运行 `independent-check` 后在结果中打开「查看复核交接」。合格成品可通过复核后签发；不合格成品可退回且保留原判定。发布新修订或恢复旧修订都会换代，已经通过但未签发的旧复核不能补签。已签凭据可从同一运行的历史复核中下载。
+
+旧版工作台数据库打开时会在事务中自动升级到 SQLite 结构 v2，不改写原始录入、历史运行或证据。升级后的数据库不再由旧版工作台打开；保留旧版时请使用数据库的独立副本。
+
 兼容保留原 HTTP 服务和数据格式，以下是原服务说明。
 
 ---
@@ -36,3 +54,7 @@ python3 -B -m tree.example /chronology/dated-widths
 ```
 
 参见 [领域规则与接口](PROJECT_SPEC.md)。`examples/demo.json` 为完整合成输入；其他示例用于观察拒收或待核。业务单元测试留待后续，当前不假设联网、数据库或已有用户数据。
+
+### 独立复测定年复核
+
+发布更新后的 `examples/workbench.json`，在结果区选择「独立复测定年复核」。验收命令：`python3 -B examples/workbench_check.py independent-check`。这项加工可选；老原料不含 `witness_reading` 时仍可使用原操作。

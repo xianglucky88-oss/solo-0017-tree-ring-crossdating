@@ -1,6 +1,7 @@
 """Rank candidate starts on exact agreement and evidence coverage."""
 from fractions import Fraction
-from .reference import consensus, signs, widths
+from .observations import signs, widths
+from .reference import consensus
 
 
 def evaluate(doc):

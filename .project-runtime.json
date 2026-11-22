@@ -66,6 +66,30 @@
     {
       "workflow_id": "wb-year-proof",
       "command": "python3 -B examples/workbench_check.py year-proof"
+    },
+    {
+      "workflow_id": "wb-independent-check",
+      "command": "python3 -B examples/workbench_check.py independent-check"
+    },
+    {
+      "workflow_id": "wb-review",
+      "command": "python3 -B examples/workbench_check.py independent-check"
+    },
+    {
+      "workflow_id": "wb-dispatch",
+      "command": "python3 -B examples/workbench_check.py independent-check"
+    },
+    {
+      "workflow_id": "wb-relative-dating",
+      "command": "python3 -B examples/workbench_check.py relative-dating"
+    },
+    {
+      "workflow_id": "wb-calendar-inventory",
+      "command": "python3 -B examples/workbench_check.py calendar-inventory"
+    },
+    {
+      "workflow_id": "wb-tree-chronology",
+      "command": "python3 -B examples/workbench_check.py tree-chronology"
     }
   ]
 }

@@ -51,5 +51,14 @@
     1940,
     1944
   ],
-  "min_pairs": 3
+  "min_pairs": 3,
+  "relative_cores": {
+    "a": {"undated_widths_um": [22, 17, 21, 21], "start_range": [1940, 1944], "min_pairs": 3},
+    "b": {"undated_widths_um": [17, 21], "start_range": [1940, 1944], "min_pairs": 1}
+  },
+  "relative_links": [{"left": "a", "right": "b", "shift_years": 1, "min_pairs": 2, "max_delta_um": 0}],
+  "calendar_inventory": {"years": [1942, 1943], "min_observed": 2},
+  "tree_chronology": {"parents": {"a": "ridge-oak-3", "b": "ridge-oak-9"}, "min_trees": 2},
+  "witness_reading": {"id": "cabinet-repeat", "start_year": 1941, "widths_um": [22, 18, null, 25],
+                      "max_delta_um": 1, "min_pairs": 2}
 }
